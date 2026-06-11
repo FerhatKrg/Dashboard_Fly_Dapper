@@ -7,7 +7,10 @@ ASP.NET Core 8.0 ve Dapper kullanılarak geliştirilmiş, 500.000+ uçuş kaydı
 ## 🖥️ Ekran Görüntüleri
 
 > Giriş Paneli · Ana Dashboard · İptal & Gecikme Analizi
-
+<img width="1551" height="862" alt="image" src="https://github.com/user-attachments/assets/5f7874cf-b7e1-4a0a-ac45-9caa9d80e2a5" />
+<img width="1868" height="967" alt="image" src="https://github.com/user-attachments/assets/5e61b60e-897f-40c3-bdae-07276e8b7acc" />
+<img width="1887" height="915" alt="image" src="https://github.com/user-attachments/assets/97148ab4-481e-453a-9bb1-53b5cdd7f359" />
+<img width="1878" height="912" alt="image" src="https://github.com/user-attachments/assets/fee7856e-7903-41a9-91a0-380c667ead39" />
 ---
 
 ## 🚀 Özellikler
@@ -63,117 +66,6 @@ crs_arr_time, arr_time, arr_delay, cancelled, diverted,
 distance, cancellation_code
 ```
 
----
-
-## 🏗️ Proje Mimarisi
-
-```
-FlyDapper/
-├── Controllers/
-│   ├── HomeController.cs
-│   ├── FlightController.cs
-│   ├── CancellationController.cs
-│   └── AccountController.cs
-├── Models/
-│   ├── DapperContext/
-│   │   └── Context.cs
-│   ├── IdentityContext/
-│   │   └── AppIdentityContext.cs
-│   ├── ViewModels/
-│   │   ├── LoginViewModel.cs
-│   │   └── ChangePasswordViewModel.cs
-│   └── Dtos/
-│       ├── AirportStat.cs
-│       ├── FlightSummary.cs
-│       ├── FlightByMonth.cs
-│       ├── FlightByDayOfWeek.cs
-│       ├── FlightByHour.cs
-│       ├── TopRoute.cs
-│       ├── FlightStatusSummary.cs
-│       ├── CancellationByReason.cs
-│       ├── CancellationByMonth.cs
-│       ├── TopCancelledRoute.cs
-│       └── TopDelayedAirline.cs
-├── Repositories/
-│   ├── IFlightRepository.cs
-│   ├── FlightRepository.cs
-│   ├── IFlightStatRepository.cs
-│   └── FlightStatRepository.cs
-└── Views/
-    ├── Flight/
-    ├── Cancellation/
-    └── Account/
-```
-
----
-
-## ⚙️ Kurulum
-
-### Gereksinimler
-- .NET 8.0 SDK
-- SQL Server
-- Visual Studio 2022 veya VS Code
-
-### Adımlar
-
-**1. Repoyu klonla:**
-```bash
-git clone https://github.com/kullanici-adi/FlyDapper.git
-cd FlyDapper
-```
-
-**2. Connection string'i ayarla:**
-
-`appsettings.Development.json` dosyası oluştur:
-```json
-{
-  "ConnectionStrings": {
-    "connection": "Server=SERVER_ADI;Database=FlightDashboardDb;User Id=KULLANICI;Password=SIFRE;TrustServerCertificate=True;"
-  }
-}
-```
-
-**3. Identity migration'ı çalıştır:**
-```
-Add-Migration InitIdentity
-Update-Database
-```
-
-**4. Uygulamayı başlat:**
-```bash
-dotnet run
-```
-
-Uygulama ilk başladığında otomatik olarak admin kullanıcısı oluşturulur:
-```
-Email    : admin@admin.com
-Şifre    : Admin123!
-```
-
----
-
-## 📈 Repository Yapısı
-
-Proje **Repository Pattern** ile geliştirilmiştir. Her istatistik için ayrı interface ve implementasyon mevcuttur. Dapper, raw SQL sorgularıyla çalışmakta; bağlantı yönetimi `using` bloğu ile otomatik yapılmaktadır.
-
-```csharp
-public async Task<AirportStat> GetMostDepartureAirportAsync()
-{
-    string query = @"
-        SELECT TOP 1
-            origin           AS AirportCode,
-            origin_city_name AS CityName,
-            COUNT(*)         AS TotalFlights
-        FROM Flights
-        GROUP BY origin, origin_city_name
-        ORDER BY TotalFlights DESC";
-
-    using var connection = _context.CreateConnection();
-    return await connection.QueryFirstOrDefaultAsync<AirportStat>(query);
-}
-```
-
----
 
 ## 🔒 Güvenlik
 
@@ -182,6 +74,3 @@ public async Task<AirportStat> GetMostDepartureAirportAsync()
 
 ---
 
-## 📄 Lisans
-
-MIT License — dilediğiniz gibi kullanabilirsiniz.
