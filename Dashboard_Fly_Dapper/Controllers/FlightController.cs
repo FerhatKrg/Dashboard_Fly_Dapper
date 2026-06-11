@@ -1,8 +1,10 @@
 ﻿using Dashboard_Fly_Dapper.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Dashboard_Fly_Dapper.Controllers
 {
+    [Authorize]
     public class FlightController : Controller
     {
         private readonly IFlightRepository _flightRepository;
