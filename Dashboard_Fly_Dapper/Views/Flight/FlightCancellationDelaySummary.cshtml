@@ -1,0 +1,241 @@
+﻿@{
+	ViewData["Title"] = "FlightCancellationDelaySummary";
+	Layout = "~/Views/Layout/Index.cshtml";
+}
+
+@{
+	var summary = (Dashboard_Fly_Dapper.Dtos.FlightStatusSummary)ViewBag.flightStatusSummary;
+}
+
+<div class="row g-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+            <i class="fa fa-ban fa-3x text-danger"></i>
+            <div class="ms-3">
+                <p class="mb-2">İptal Edilen Uçuş</p>
+                <h6 class="mb-0">@summary.TotalCancelled.ToString("N0")</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+            <i class="fa fa-percent fa-3x text-danger"></i>
+            <div class="ms-3">
+                <p class="mb-2">İptal Oranı</p>
+                <h6 class="mb-0">% @summary.CancellationRate.ToString("F2")</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+            <i class="fa fa-clock fa-3x text-warning"></i>
+            <div class="ms-3">
+                <p class="mb-2">Gecikme Sayısı</p>
+                <h6 class="mb-0">@summary.TotalDelayed.ToString("N0")</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+            <i class="fa fa-percent fa-3x text-warning"></i>
+            <div class="ms-3">
+                <p class="mb-2">Gecikme Oranı</p>
+                <h6 class="mb-0">% @summary.DelayRate.ToString("F2")</h6>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<!-- Doughnut + Line yan yana -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-12 col-xl-6">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">İptal Sebepleri Dağılımı</h6>
+            <canvas id="cancellationByReasonChart"></canvas>
+        </div>
+    </div>
+    <div class="col-sm-12 col-xl-6">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">Aylara Göre İptal Trendi</h6>
+            <canvas id="cancellationByMonthChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Horizontal Bar -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-12 col-xl-12">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">En Çok Geciken Top 10 Havayolu</h6>
+            <canvas id="delayedAirlinesChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Tablo -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-12 col-xl-12">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">En Çok İptal Olan Top 10 Rota</h6>
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Kalkış</th>
+                        <th>Varış</th>
+                        <th>Rota</th>
+                        <th class="text-end">İptal Sayısı</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var routes = (List<Dashboard_Fly_Dapper.Dtos.TopCancelledRoute>)ViewBag.top10CancelledRoutes;
+                        int i = 1;
+                    }
+                    @foreach (var route in routes)
+                    {
+                        <tr>
+                            <td>@(i++)</td>
+                            <td>
+                                <span class="fw-bold">@route.Origin</span><br />
+                                <small class="text-muted">@route.OriginCity</small>
+                            </td>
+                            <td>
+                                <span class="fw-bold">@route.Dest</span><br />
+                                <small class="text-muted">@route.DestCity</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger">@route.Origin</span>
+                                <span class="mx-1">→</span>
+                                <span class="badge bg-secondary">@route.Dest</span>
+                            </td>
+                            <td class="text-end fw-bold text-danger">@route.TotalCancelled.ToString("N0")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        var summary = (Dashboard_Fly_Dapper.Dtos.FlightStatusSummary)ViewBag.flightStatusSummary;
+
+        var reasons = (List<Dashboard_Fly_Dapper.Dtos.CancellationByReason>)ViewBag.cancellationByReason;
+        var reasonLabels = string.Join(",", reasons.Select(x => $"\"{x.Reason}\""));
+        var reasonCounts = string.Join(",", reasons.Select(x => x.TotalCancelled));
+
+        var monthNames = new[] { "", "Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara" };
+        var cancelByMonth = (List<Dashboard_Fly_Dapper.Dtos.CancellationByMonth>)ViewBag.cancellationByMonth;
+        var monthLabels = string.Join(",", cancelByMonth.Select(x => $"\"{monthNames[x.Month]}\""));
+        var monthCounts = string.Join(",", cancelByMonth.Select(x => x.TotalCancelled));
+
+        var airlines = (List<Dashboard_Fly_Dapper.Dtos.TopDelayedAirline>)ViewBag.top10DelayedAirlines;
+        var airlineLabels = string.Join(",", airlines.Select(x => $"\"{x.Carrier}\""));
+        var airlineDelays = string.Join(",", airlines.Select(x => x.AvgDelay.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)));
+    }
+    <script>
+        // Doughnut - İptal Sebepleri
+        new Chart(document.getElementById("cancellationByReasonChart"), {
+            type: "doughnut",
+            data: {
+                labels: [@Html.Raw(reasonLabels)],
+                datasets: [{
+                    data: [@Html.Raw(reasonCounts)],
+                    backgroundColor: [
+                        "rgba(255, 99, 132, 0.8)",
+                        "rgba(54, 162, 235, 0.8)",
+                        "rgba(255, 205, 86, 0.8)",
+                        "rgba(75, 192, 192, 0.8)"
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: "bottom" },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => " " + ctx.label + ": " + ctx.raw.toLocaleString()
+                        }
+                    }
+                }
+            }
+        });
+
+        // Line - Aylara Göre İptal Trendi
+        new Chart(document.getElementById("cancellationByMonthChart"), {
+            type: "line",
+            data: {
+                labels: [@Html.Raw(monthLabels)],
+                datasets: [{
+                    label: "İptal Sayısı",
+                    data: [@Html.Raw(monthCounts)],
+                    borderColor: "rgba(255, 99, 132, 1)",
+                    backgroundColor: "rgba(255, 99, 132, 0.1)",
+                    borderWidth: 2,
+                    pointBackgroundColor: "rgba(255, 99, 132, 1)",
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => " " + ctx.raw.toLocaleString() + " iptal"
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: val => val.toLocaleString() },
+                        grid: { color: "rgba(0,0,0,0.05)" }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Horizontal Bar - En Çok Geciken Havayolları
+        new Chart(document.getElementById("delayedAirlinesChart"), {
+            type: "bar",
+            data: {
+                labels: [@Html.Raw(airlineLabels)],
+                datasets: [{
+                    label: "Ort. Gecikme (dk)",
+                    data: [@Html.Raw(airlineDelays)],
+                    backgroundColor: "rgba(255, 159, 64, 0.8)",
+                    borderColor: "rgba(255, 159, 64, 1)",
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => " " + ctx.raw + " dk ortalama gecikme"
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: "rgba(0,0,0,0.05)" }
+                    },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+}

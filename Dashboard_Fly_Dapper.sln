@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36221.1 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dashboard_Fly_Dapper", "Dashboard_Fly_Dapper\Dashboard_Fly_Dapper.csproj", "{D3BA21DE-8B15-4CDB-A154-3DF0200CE4F5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D3BA21DE-8B15-4CDB-A154-3DF0200CE4F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3BA21DE-8B15-4CDB-A154-3DF0200CE4F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3BA21DE-8B15-4CDB-A154-3DF0200CE4F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3BA21DE-8B15-4CDB-A154-3DF0200CE4F5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2BA9306A-8E47-430D-AAB7-78DCF09403F9}
+	EndGlobalSection
+EndGlobal

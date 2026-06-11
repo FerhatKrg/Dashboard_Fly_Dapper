@@ -1,0 +1,258 @@
+﻿@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Layout/Index.cshtml";
+}
+
+<div class="row g-4">
+
+    <!-- Günlük Uçuş -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+            <i class="fa fa-plane-departure fa-3x text-primary"></i>
+            <div class="ms-3">
+                <p class="mb-2">Günlük Uçuş</p>
+                <h6 class="mb-0">@ViewBag.FlightSummary.DailyAverageFlights.ToString("F1")</h6>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toplam Uçuş -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+            <i class="fa fa-globe fa-3x text-success"></i>
+            <div class="ms-3">
+                <p class="mb-2">Toplam Uçuş</p>
+                <h6 class="mb-0">@ViewBag.FlightSummary.TotalFlights</h6>
+            </div>
+        </div>
+    </div>
+
+    <!-- En Çok Uçuş -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+            <i class="fa fa-map-marked-alt fa-3x text-warning"></i>
+            <div class="ms-3">
+                <p class="mb-2">En Çok Uçuş</p>
+                <h6 class="mb-0">@ViewBag.mostDepartureAirport.AirportCode</h6>
+            </div>
+        </div>
+    </div>
+
+    <!-- En Az Uçuş -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+            <i class="fa fa-sort-amount-down fa-3x text-danger"></i>
+            <div class="ms-3">
+                <p class="mb-2">En Az Uçuş</p>
+                <h6 class="mb-0">@ViewBag.LowestTrafficAirport.AirportCode</h6>
+            </div>
+        </div>
+    </div>
+
+</div>
+<br />
+
+<div class="row g-4">
+    <div class="col-sm-12 col-xl-6">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">Aylara Göre Uçuş Sayısı</h6>
+            <canvas id="flightsByMonthChart"></canvas>
+        </div>
+    </div>
+
+    <div class="col-sm-12 col-xl-6">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">Haftanın Günlerine Göre Uçuş Yoğunluğu</h6>
+            <canvas id="flightsByDayChart"></canvas>
+        </div>
+    </div>
+</div>
+<br />
+<div class="col-sm-12 col-xl-12">
+    <div class="bg-light rounded h-100 p-4">
+        <h6 class="mb-4">En Çok Kullanılan 10 Rota</h6>
+        <table class="table table-bordered table-hover">
+            <thead style="background-color:#f8f9fa;">
+                <tr>
+                    <th>#</th>
+                    <th>Kalkış</th>
+                    <th>Varış</th>
+                    <th>Rota</th>
+                    <th class="text-end">Uçuş Sayısı</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var routes = (List<Dashboard_Fly_Dapper.Dtos.Top10Route>)ViewBag.top10Routes;
+                    int i = 1;
+                }
+                @foreach (var route in routes)
+                {
+                    <tr>
+                        <td>@(i++)</td>
+                        <td>
+                            <span class="fw-bold">@route.Origin</span>
+                            <br />
+                            <small class="text-muted">@route.OriginCity</small>
+                        </td>
+                        <td>
+                            <span class="fw-bold">@route.Dest</span>
+                            <br />
+                            <small class="text-muted">@route.DestCity</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">@route.Origin</span>
+                            <span class="mx-1">→</span>
+                            <span class="badge bg-success">@route.Dest</span>
+                        </td>
+                        <td class="text-end fw-bold">@route.TotalFlights.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<br />
+<div class="col-sm-12 col-xl-12">
+    <div class="bg-light rounded h-100 p-4">
+        <h6 class="mb-4">Saatlere Göre Uçuş Yoğunluğu</h6>
+        <canvas id="flightsByHourChart"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        var flightsByMonth = (List<Dashboard_Fly_Dapper.Dtos.FlightByMonth>)ViewBag.flightsByMonth;
+        var monthNames = new[] { "", "Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara" };
+        var labels = string.Join(",", flightsByMonth.Select(x => $"\"{monthNames[x.Month]}\""));
+        var counts = string.Join(",", flightsByMonth.Select(x => x.TotalFlights));
+
+        var flightsByDay = (List<Dashboard_Fly_Dapper.Dtos.FlightByDayOfWeek>)ViewBag.flightsByDayOfWeek;
+        var dayNames = new[] { "", "Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt" };
+        var dayLabels = string.Join(",", flightsByDay.Select(x => $"\"{dayNames[x.DayOfWeek]}\""));
+        var dayCounts = string.Join(",", flightsByDay.Select(x => x.TotalFlights));
+
+        var flightsByHour = (List<Dashboard_Fly_Dapper.Dtos.FlightByHour>)ViewBag.flightsByHour;
+        var hourLabels = string.Join(",", flightsByHour.Select(x => $"\"{x.Hour:D2}:00\""));
+        var hourCounts = string.Join(",", flightsByHour.Select(x => x.TotalFlights));
+    }
+    <script>
+        new Chart(document.getElementById("flightsByMonthChart"), {
+            type: "line",
+            data: {
+                labels: [@Html.Raw(labels)],
+                datasets: [{
+                    label: "Uçuş Sayısı",
+                    data: [@Html.Raw(counts)],
+                    borderColor: "rgba(54, 162, 235, 1)",
+                    backgroundColor: "rgba(54, 162, 235, 0.1)",
+                    borderWidth: 2,
+                    pointBackgroundColor: "rgba(54, 162, 235, 1)",
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => " " + ctx.raw.toLocaleString() + " uçuş"
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { callback: val => val.toLocaleString() },
+                        grid: { color: "rgba(0,0,0,0.05)" }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById("flightsByDayChart"), {
+            type: "bar",
+            data: {
+                labels: [@Html.Raw(dayLabels)],
+                datasets: [{
+                    label: "Uçuş Sayısı",
+                    data: [@Html.Raw(dayCounts)],
+                    backgroundColor: [
+                        "rgba(255, 99, 132, 0.7)",
+                        "rgba(54, 162, 235, 0.7)",
+                        "rgba(255, 205, 86, 0.7)",
+                        "rgba(75, 192, 192, 0.7)",
+                        "rgba(153, 102, 255, 0.7)",
+                        "rgba(255, 159, 64, 0.7)",
+                        "rgba(201, 203, 207, 0.7)"
+                    ],
+                    borderWidth: 0,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => " " + ctx.raw.toLocaleString() + " uçuş"
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { callback: val => val.toLocaleString() },
+                        grid: { color: "rgba(0,0,0,0.05)" }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        const flightsByHourData = [@Html.Raw(hourCounts)];
+        const maxVal = Math.max(...flightsByHourData);
+
+        new Chart(document.getElementById("flightsByHourChart"), {
+            type: "bar",
+            data: {
+                labels: [@Html.Raw(hourLabels)],
+                datasets: [{
+                    label: "Uçuş Sayısı",
+                    data: flightsByHourData,
+                    backgroundColor: flightsByHourData.map(val => {
+                        if (val >= maxVal * 0.75) return "rgba(255, 99, 132, 0.8)";
+                        if (val >= maxVal * 0.50) return "rgba(255, 205, 86, 0.8)";
+                        return "rgba(54, 162, 235, 0.7)";
+                    }),
+                    borderWidth: 0,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => " " + ctx.raw.toLocaleString() + " uçuş"
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: val => val.toLocaleString() },
+                        grid: { color: "rgba(0,0,0,0.05)" }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+}
